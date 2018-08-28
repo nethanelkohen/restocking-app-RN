@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { TouchableOpacity, Keyboard, StyleSheet } from 'react-native';
+import { TouchableOpacity, Keyboard, Alert, StyleSheet } from 'react-native';
 import {
   Container,
   View,
@@ -71,46 +71,45 @@ class App extends Component {
         'POST Response', 'Response Body -> ' + JSON.stringify(responseData);
       })
       .done();
+    this.setState({ item: null, amount: null });
     Keyboard.dismiss();
   };
 
   stockItem = id => {
-    fetch(`http://127.0.0.1:8000/api/item/${id}/complete`).done();
+    fetch(`http://127.0.0.1:8000/api/item/${id}/stock`).done();
+  };
+
+  reStockItem = id => {
+    fetch(`http://127.0.0.1:8000/api/item/${id}/restock`).done();
   };
 
   deleteItem = id => {
     fetch(`http://127.0.0.1:8000/api/item/${id}/delete`).done();
+    Alert.alert('Item deleted!');
   };
 
   render() {
     let { stockedItems, items } = this.state;
     return (
       <Container>
-        <Header
-          androidStatusBarColor="#1362af"
-          style={{ backgroundColor: '#1976D2' }}
-        >
+        <Header style={{ backgroundColor: '#1976D2' }}>
           <Body style={styles.body}>
             <Title>Restocking App</Title>
           </Body>
         </Header>
         <Content style={styles.content}>
-          <Item rounded style={{ marginBottom: 20, marginTop: 20 }}>
+          <Item rounded style={{ marginBottom: 10, marginTop: 10 }}>
             <Input
               placeholder="Add Item"
               onChangeText={input => this.setState({ item: input })}
-              ref={ref => {
-                this.input = ref;
-              }}
+              value={this.state.item}
             />
           </Item>
-          <Item rounded style={{ marginBottom: 20 }}>
+          <Item rounded style={{ marginBottom: 10 }}>
             <Input
               placeholder="Add amount"
               onChangeText={input => this.setState({ amount: input })}
-              ref={ref => {
-                this.input = ref;
-              }}
+              value={this.state.amount}
             />
           </Item>
           <Button
@@ -122,17 +121,23 @@ class App extends Component {
             <Text>Add</Text>
           </Button>
           <View style={styles.container}>
-            <Text style={styles.text}>OUT OF STOCK</Text>
+            <Text style={styles.text}>NEED TO RESTOCK</Text>
           </View>
           <List
             dataArray={!items ? {} : items}
             renderRow={item => (
               <ListItem style={{ marginTop: 5 }}>
                 <Left>
-                  <Text style={styles.listitemtext}>
-                    {item.item} amount:
-                    {item.amount}
-                  </Text>
+                  <TouchableOpacity
+                    onLongPress={() => {
+                      this.deleteItem(item.id);
+                    }}
+                  >
+                    <Text style={styles.listitemtext}>
+                      {item.item} amount:
+                      {item.amount}
+                    </Text>
+                  </TouchableOpacity>
                 </Left>
                 <Right>
                   <TouchableOpacity
@@ -151,22 +156,30 @@ class App extends Component {
             )}
           />
           <View style={styles.container}>
-            <Text style={styles.text}>IN STOCK</Text>
+            <Text style={styles.text}>HAVE ENOUGH</Text>
           </View>
           <List
             dataArray={!stockedItems ? {} : stockedItems}
             renderRow={item => (
               <ListItem style={{ marginTop: 5 }}>
                 <Left>
-                  <Text style={styles.listitemtext}>{item.item}</Text>
-                  <Text style={styles.listitemtext}>
-                    {' '}
-                    amount: {item.amount}
-                  </Text>
+                  <TouchableOpacity
+                    onLongPress={() => {
+                      this.deleteItem(item.id);
+                    }}
+                  >
+                    <Text style={styles.listitemtext}>
+                      {item.item} amount:
+                      {item.amount}
+                    </Text>
+                  </TouchableOpacity>
                 </Left>
                 <Right>
                   <TouchableOpacity
                     onPress={() => {
+                      this.reStockItem(item.id);
+                    }}
+                    onLongPress={() => {
                       this.deleteItem(item.id);
                     }}
                     hitSlop={{ top: 20, bottom: 20, left: 50, right: 50 }}
