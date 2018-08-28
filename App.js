@@ -75,6 +75,28 @@ class App extends Component {
     Keyboard.dismiss();
   };
 
+  editItem = () => {
+    fetch('http://127.0.0.1:8000/api/item/${id}/update', {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        item: this.state.itemUpdate,
+        amount: this.state.amountUpdate
+      })
+    })
+      .then(response => response.json())
+      .then(responseData => {
+        console.log('responseData', responseData);
+        'PUT Response', 'Response Body -> ' + JSON.stringify(responseData);
+      })
+      .done();
+    this.setState({ itemUpdate: null, amountUpdate: null });
+    Keyboard.dismiss();
+  };
+
   stockItem = id => {
     fetch(`http://127.0.0.1:8000/api/item/${id}/stock`).done();
   };
@@ -133,10 +155,10 @@ class App extends Component {
                       this.deleteItem(item.id);
                     }}
                   >
-                    <Text style={styles.listitemtext}>
+                    <Input style={styles.listitemtext}>
                       {item.item} amount:
                       {item.amount}
-                    </Text>
+                    </Input>
                   </TouchableOpacity>
                 </Left>
                 <Right>
@@ -178,9 +200,6 @@ class App extends Component {
                   <TouchableOpacity
                     onPress={() => {
                       this.reStockItem(item.id);
-                    }}
-                    onLongPress={() => {
-                      this.deleteItem(item.id);
                     }}
                     hitSlop={{ top: 20, bottom: 20, left: 50, right: 50 }}
                   >
